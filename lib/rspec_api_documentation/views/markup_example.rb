@@ -21,11 +21,11 @@ module RspecApiDocumentation
       end
 
       def dirname
-        sanitize(resource_name.to_s.downcase)
+        clean_resource_name
       end
 
       def filename
-        basename = sanitize(description.downcase)
+        basename = clean_description
         basename = Digest::MD5.new.update(description).to_s if basename.blank?
         "#{basename}.#{extension}"
       end

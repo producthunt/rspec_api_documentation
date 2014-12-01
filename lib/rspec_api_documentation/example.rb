@@ -58,7 +58,20 @@ module RspecApiDocumentation
       filter_headers(metadata[:requests]) || []
     end
 
+    def clean_resource_name
+      clean_name(resource_name.downcase)
+    end
+
+    def clean_description
+      clean_name(description.downcase).gsub(Pathname::SEPARATOR_PAT, '_')
+    end
+
     private
+
+    CONTROL_CHARACTERS = /[\s#&?:.]+/
+    def clean_name(name)
+      name.gsub(CONTROL_CHARACTERS, '_').gsub(/[-_]{2,}/, '_')
+    end
 
     def filter_headers(requests)
       requests = remap_headers(requests, :request_headers, configuration.request_headers_to_include)
