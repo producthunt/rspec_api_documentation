@@ -74,18 +74,30 @@ module RspecApiDocumentation
     end
 
     def filter_headers(requests)
-      requests = remap_headers(requests, :request_headers, configuration.request_headers_to_include)
-      requests = remap_headers(requests, :response_headers, configuration.response_headers_to_include)
+      return if requests.nil?
+
+      requests = remap_headers(requests, :request_headers,
+                               configuration.request_headers_to_include,
+                               configuration.request_headers_to_exclude)
+
+      requests = remap_headers(requests, :response_headers,
+                               configuration.response_headers_to_include,
+                               configuration.response_headers_to_exclude)
       requests
     end
 
-    def remap_headers(requests, key, headers_to_include)
-      return requests unless headers_to_include
-      requests.each.with_index do |request_hash, index|
+    def remap_headers(requests, key, headers_to_include, headers_to_exclude)
+      return requests unless headers_to_include || headers_to_exclude
+
+      requests.each do |request_hash|
         next unless request_hash.key?(key)
-        headers = request_hash[key]
-        request_hash[key] = headers.select{ |key, _| headers_to_include.map(&:downcase).include?(key.downcase) }
-        requests[index] = request_hash
+        request_hash[key].delete_if do |key, _|
+          if headers_to_include
+            !headers_to_include.map(&:downcase).include?(key.downcase)
+          elsif headers_to_exclude
+            headers_to_exclude.map(&:downcase).include?(key.downcase)
+          end
+        end
       end
     end
   end

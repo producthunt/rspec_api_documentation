@@ -87,6 +87,8 @@ module RspecApiDocumentation
     add_setting :io_docs_protocol, :default => "http"
     add_setting :request_headers_to_include, :default => nil
     add_setting :response_headers_to_include, :default => nil
+    add_setting :request_headers_to_exclude, :default => nil
+    add_setting :response_headers_to_exclude, :default => nil
     add_setting :html_embedded_css_file, :default => nil
 
     # renamed to request_body_formatter. here for backwards compatibility
