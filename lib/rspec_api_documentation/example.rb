@@ -78,26 +78,27 @@ module RspecApiDocumentation
 
       requests = remap_headers(requests, :request_headers,
                                configuration.request_headers_to_include,
-                               configuration.request_headers_to_exclude)
+                               configuration.request_headers_to_exclude,
+                               configuration.request_headers_rewrite_proc)
 
       requests = remap_headers(requests, :response_headers,
                                configuration.response_headers_to_include,
-                               configuration.response_headers_to_exclude)
+                               configuration.response_headers_to_exclude,
+                               configuration.response_headers_rewrite_proc)
       requests
     end
 
-    def remap_headers(requests, key, headers_to_include, headers_to_exclude)
-      return requests unless headers_to_include || headers_to_exclude
-
+    def remap_headers(requests, key, headers_to_include, headers_to_exclude, header_rewrite_proc)
       requests.each do |request_hash|
         next unless request_hash.key?(key)
-        request_hash[key].delete_if do |key, _|
-          if headers_to_include
-            !headers_to_include.map(&:downcase).include?(key.downcase)
-          elsif headers_to_exclude
-            headers_to_exclude.map(&:downcase).include?(key.downcase)
-          end
+
+        if headers_to_include
+          request_hash[key].delete_if { |key, _| !headers_to_include.map(&:downcase).include?(key.downcase) }
+        elsif headers_to_exclude
+          request_hash[key].delete_if { |key, _| headers_to_exclude.map(&:downcase).include?(key.downcase) }
         end
+
+        header_rewrite_proc.call(request_hash[key]) if header_rewrite_proc
       end
     end
   end
